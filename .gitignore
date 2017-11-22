@@ -1,0 +1,18 @@
+# Dependency directories
+node_modules/
+
+# Logs
+*.log
+
+# bundle.js
+dist/app.bundle.js
+
+# mLab connection
+env.env
+
+# MongoDB URI
+db/uri.js
+
+# Remove later 
+server/api/_helpers.js
+server/api/_index.js
