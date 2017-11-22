@@ -1,7 +1,7 @@
 import React from 'react';
 import Form from './Form.js';
-import LoginSubmissionForm from './LoginSubmissionForm';
-import SignupSubmissionForm from './SignupSubmissionForm';
+
+import LoginModal from './LoginModal';
 
 const post = (url, data, cb) => {
 	return fetch(url, {
@@ -51,9 +51,9 @@ export default class App extends React.Component {
 	render() {
 		return (
 			<div>
+				<LoginModal />
 				Login: <LoginSubmissionForm onLoginHandler={this.onLoginHandler} />
 				Signup: <SignupSubmissionForm onSignupHandler={this.onSignupHandler} />
-				{/* <Form onSubmitHandler={this.onSubmitHandler} /> */}
 			</div>
 		);
 	}
