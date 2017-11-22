@@ -14,7 +14,7 @@ export default class UserCredentialsModal extends React.Component {
 	login = () => {
 		return (
 			<Modal trigger={<Button>Log In</Button>}>
-				<Modal.Header>Log in</Modal.Header>
+				<Modal.Header>Log In</Modal.Header>
 				<Modal.Content image>
 					<Image
 						wrapped
@@ -22,9 +22,9 @@ export default class UserCredentialsModal extends React.Component {
 						src="https://thumbs.dreamstime.com/z/bullying-group-kids-classmate-isolated-white-63520042.jpg"
 					/>
 					<Modal.Description>
-						<Header>Log in here</Header>
-						Login: <LoginSubmissionForm onLoginHandler={this.props.onLoginHandler} />
-						Not signed up yet?{' '}
+						<LoginSubmissionForm onLoginHandler={this.props.onLoginHandler} />
+						<br />
+						Don't have an account yet?{' '}
 						<a
 							onClick={() => {
 								this.setState({ view: 'signup' });
@@ -49,9 +49,9 @@ export default class UserCredentialsModal extends React.Component {
 						src="https://i.pinimg.com/originals/76/4e/50/764e501b90c004aa849ce31e9e18ca80.jpg"
 					/>
 					<Modal.Description>
-						<Header>Sign up here</Header>
-						Signup: <SignupSubmissionForm onSignupHandler={this.props.onSignupHandler} />
-						Signed up already?{' '}
+						<SignupSubmissionForm onSignupHandler={this.props.onSignupHandler} />
+						<br />
+						Have an account already?{' '}
 						<a
 							onClick={() => {
 								this.setState({ view: 'login' });
