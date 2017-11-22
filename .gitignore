@@ -11,7 +11,7 @@ dist/app.bundle.js
 env.env
 
 # MongoDB URI
-db/uri.js
+db/mongo.js
 
 # Remove later 
 server/api/_helpers.js

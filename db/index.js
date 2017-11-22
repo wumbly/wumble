@@ -1,5 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
-const MONGODB_URI = require('./uri');
+const MONGODB_URI = require('./mongo');
 
 MongoClient.connect(MONGODB_URI, (err, db) => {
   console.log(db);

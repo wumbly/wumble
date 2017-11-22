@@ -1,5 +1,4 @@
 const Mongoose = require('mongoose');
-const MONGODB_URI = require('../uri');
 
 var Schema = Mongoose.Schema;
 

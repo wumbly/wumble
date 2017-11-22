@@ -9,7 +9,7 @@ const MongoStore = require('connect-mongo')(session);
 const Mongoose = require('mongoose');
 const passport = require('passport');
 const MongoClient = require('mongodb').MongoClient;
-const MONGODB_URI = require('../db/uri');
+const MONGODB_URI = require('../db/mongo');
 const helpers = require('./api/helpers');
 
 Mongoose.connect(MONGODB_URI);
