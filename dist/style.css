@@ -4,8 +4,8 @@ body {
 
 .chatboy {
 	position: fixed;
-	top: 80vh;
-	left: 5vw;
+	bottom: 2em;
+	left: 2em;
 	text-align: center;
 	height: auto;
 }
@@ -49,6 +49,12 @@ body {
 
 .chatboy .chat-send {
 	margin-top: 0.25em;
+}
+
+.chatboy .messages {
+	max-height: 10em;
+	min-width: 10em;
+	overflow: auto;
 }
 
 .login-form > * {
