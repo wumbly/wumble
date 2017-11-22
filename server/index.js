@@ -6,15 +6,16 @@ const { graphql, buildSchema, GraphQLSchema, GraphQLObjectType } = require('grap
 const data = require('../sample_data/sample_data.json');
 // const session = require('express-session');
 // const session = require('koa-session');
-const session = require('koa-session-store');
+const session = require('koa-session');
 const MongoStore = require('koa-session-mongo');
 // const MongoStore = require('connect-mongo')(session);
 const Mongoose = require('mongoose');
-const passport = require('passport');
+const passport = require('koa-passport');
 const MongoClient = require('mongodb').MongoClient;
 const MONGODB_URI = require('../db/mongo');
 const helpers = require('./api/helpers');
 
+import utils from 'util';
 import Koa from 'koa';
 import Router from 'koa-router';
 import bodyParser from 'koa-bodyparser';
@@ -37,21 +38,17 @@ db.once('open', () => {
 const koa = new Koa();
 const app = new Router();
 
-// Session.
-app.keys = ['hyuk'];
-app.use(
-	session(
-		{
-			store: mongoStore.create({
-				mongoose: Mongoose.connection,
-			}),
-		},
-		app
-	)
-);
+// Encode data.
+koa.use(bodyParser());
 
+// Session.
+koa.keys = ['hyuk'];
+koa.use(session({}, koa));
+
+koa.use(passport.initialize());
+koa.use(passport.session());
 // Headers.
-app.use(async function(ctx, next) {
+koa.use(async function(ctx, next) {
 	// Website you wish to allow to connect
 	ctx.set('Access-Control-Allow-Origin', '*');
 
@@ -69,8 +66,6 @@ app.use(async function(ctx, next) {
 	await next();
 });
 
-// Encode data.
-app.use(bodyParser());
 // app.use(bodyParser.urlencoded({ extended: true }));
 
 // Listen for responses.
@@ -80,13 +75,13 @@ app.use(bodyParser());
 // Server home. Currently takes you to GraphQL interface.
 app.get('/', async (ctx, next) => {
 	ctx.body = 'Welcome to my server!';
-	// await next()
+	await next();
 });
 
 // // End point that returns response. For testing purposes.
 app.post('/', async (ctx, next) => {
 	console.log(ctx);
-	// await next()
+	await next();
 });
 
 // // // Add todo to mongoDB server on mLab.
@@ -98,21 +93,18 @@ app.post('/', async (ctx, next) => {
 
 // // Add user's username and password to the database.
 app.post('/signup', async (ctx, next) => {
-	await new Promise(res =>
-		helpers.signup(ctx.body, message => {
-			console.log(message);
-			res();
-		})
-	);
+	const message = await helpers.signup(ctx.request.body);
+	console.log(message);
+	ctx.response.status = 200;
+	await next();
 });
 
 app.post('/login', async (ctx, next) => {
-	await new Promise(res =>
-		helpers.login(req.body, message => {
-			console.log(message);
-			res();
-		})
-	);
+	const message = await helpers.login(ctx.request.body);
+	console.log(message);
+	ctx.body = message;
+	ctx.response.status = 200;
+	await next();
 });
 
 // Retrieve data from JSON data file using GraphQL.
@@ -122,6 +114,7 @@ app.post('/login', async (ctx, next) => {
 // });
 
 koa.use(app.routes()).use(app.allowedMethods());
+koa.listen('3000');
 
 // // app.use(session({
 // //   secret: 'hyuk',

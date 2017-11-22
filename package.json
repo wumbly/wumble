@@ -38,6 +38,7 @@
 		"koa": "^2.4.1",
 		"koa-bodyparser": "^4.2.0",
 		"koa-mongo": "^0.8.0",
+		"koa-passport": "^4.0.1",
 		"koa-router": "^7.3.0",
 		"koa-session": "^5.5.1",
 		"koa-session-mongo": "^1.1.0",
