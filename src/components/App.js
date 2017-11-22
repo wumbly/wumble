@@ -2,6 +2,8 @@ import React from 'react';
 import Form from './Form.js';
 
 import LoginModal from './LoginModal';
+import LoginSubmissionForm from './LoginSubmissionForm';
+import SignupSubmissionForm from './SignupSubmissionForm';
 
 const post = (url, data, cb) => {
 	return fetch(url, {

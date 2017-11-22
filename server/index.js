@@ -1,16 +1,24 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+// const express = require('express');
+// const bodyParser = require('body-parser');
 const graphqlHTTP = require('express-graphql');
 const _ = require('lodash/core');
 const { graphql, buildSchema, GraphQLSchema, GraphQLObjectType } = require('graphql');
 const data = require('../sample_data/sample_data.json');
-const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
+// const session = require('express-session');
+// const session = require('koa-session');
+const session = require('koa-session');
+const MongoStore = require('koa-session-mongo');
+// const MongoStore = require('connect-mongo')(session);
 const Mongoose = require('mongoose');
-const passport = require('passport');
+const passport = require('koa-passport');
 const MongoClient = require('mongodb').MongoClient;
 const MONGODB_URI = require('../db/mongo');
 const helpers = require('./api/helpers');
+
+import utils from 'util';
+import Koa from 'koa';
+import Router from 'koa-router';
+import bodyParser from 'koa-bodyparser';
 
 Mongoose.connect(MONGODB_URI);
 
@@ -25,164 +33,184 @@ db.once('open', () => {
 	console.log('CONNECTED TO MONGOOSE');
 });
 
-var app = express();
+// var app = express();
+
+const koa = new Koa();
+const app = new Router();
+
+// Encode data.
+koa.use(bodyParser());
 
 // Session.
-app.use(
-	session({
-		secret: 'hyuk',
-		store: new MongoStore({ mongooseConnection: Mongoose.connection }),
-		resave: true,
-		saveUninitialized: true,
-	})
-);
+koa.keys = ['hyuk'];
+koa.use(session({}, koa));
 
+koa.use(passport.initialize());
+koa.use(passport.session());
 // Headers.
-app.use(function(req, res, next) {
+koa.use(async function(ctx, next) {
 	// Website you wish to allow to connect
-	res.setHeader('Access-Control-Allow-Origin', '*');
+	ctx.set('Access-Control-Allow-Origin', '*');
 
 	// Request methods you wish to allow
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+	ctx.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
 	// Request headers you wish to allow
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
+	ctx.set('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
 
 	// Set to true if you need the website to include cookies in the requests sent
 	// to the API (e.g. in case you use sessions)
-	res.setHeader('Access-Control-Allow-Credentials', true);
+	ctx.set('Access-Control-Allow-Credentials', true);
 
 	// Pass to next layer of middleware
-	next();
+	await next();
 });
 
-// Encode data.
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.urlencoded({ extended: true }));
 
 // Listen for responses.
-app.listen(3000, () => console.log('Now browse to localhost:3000/graphql'));
+// app.listen(3000, () => console.log('Now browse to localhost:3000/graphql'));
 
 //// Defining end points
 // Server home. Currently takes you to GraphQL interface.
-app.get('/', function(req, res) {
-	res.end('Welcome to my server!');
+app.get('/', async (ctx, next) => {
+	ctx.body = 'Welcome to my server!';
+	await next();
 });
 
-// End point that returns response. For testing purposes.
-app.post('/', (req, res) => {
-	console.log(JSON.stringify(req.body));
-	res.end(String(req.body.input));
+// // End point that returns response. For testing purposes.
+app.post('/', async (ctx, next) => {
+	console.log(ctx);
+	await next();
 });
 
-// Add user's username and password to the database.
-app.post('/signup', (req, res) => {
-	helpers.signup(req.body, message => {
-		console.log(message);
-		res.end();
-	});
+// // // Add todo to mongoDB server on mLab.
+// // app.post('/addtodo', (req, res) => {
+// //   helpers.addToDo(req.body, () => {
+// //     res.end();
+// //   });
+// // });
+
+// // Add user's username and password to the database.
+app.post('/signup', async (ctx, next) => {
+	const message = await helpers.signup(ctx.request.body);
+	console.log(message);
+	ctx.response.status = 200;
+	await next();
 });
 
-app.post('/login', (req, res) => {
-	helpers.login(req.body, message => {
-		console.log(message);
-		res.end();
-	});
+app.post('/login', async (ctx, next) => {
+	const message = await helpers.login(ctx.request.body);
+	console.log(message);
+	ctx.body = message;
+	ctx.response.status = 200;
+	await next();
 });
 
 // Retrieve data from JSON data file using GraphQL.
-app.post('/data', (req, res) => {
-	graphql(schema, req.body.input, rootValue).then(result => {
-		res.send(JSON.stringify(result, null, 2));
-	});
-});
+// app.post('/data', async (ctx, nest) => {
+// 	const result = await graphql(schema, ctx.body.input, rootValue);
+// 	ctx.body = JSON.stringify(result, null, 2);
+// });
 
-//////////////////////////////////////////
-/////////// GraphQL Playground ///////////
-//////////////////////////////////////////
+koa.use(app.routes()).use(app.allowedMethods());
+koa.listen('3000');
 
-var schema = buildSchema(`
-  type Player {
-    id: ID
-    name: String!
-    championshipCount: Int!
-    team: Team!
-  }
+// // app.use(session({
+// //   secret: 'hyuk',
+// //   store: new MongoStore({ mongooseConnection: mongoose.connection }),
+// //   resave: true,
+// //   saveUninitialized: true
+// // }));
 
-  type Team {
-    id: ID
-    name: String!
-    championshipCount: Int!
-    players: [Player!]!
-  }
+// // app.use(passport.initialize());
 
-  type Query {
-    allPlayers(offset: Int = 0, limit: Int = -1): [Player!]!
-  }
+// //////////////////////////////////////////
+// /////////// GraphQL Playground ///////////
+// //////////////////////////////////////////
 
-  type Mutation {
-    createPlayer(name: String,
-      championshipCount: Int,
-      teamId: String): Player
-  }
+// var schema = buildSchema(`
+//   type Player {
+//     id: ID
+//     name: String!
+//     championshipCount: Int!
+//     team: Team!
+//   }
 
-`);
+//   type Team {
+//     id: ID
+//     name: String!
+//     championshipCount: Int!
+//     players: [Player!]!
+//   }
 
-var root = {
-	greetings: {
-		hello: () => 'Hello world!',
-		goodbye: () => 'See you soon!',
-	},
-};
+//   type Query {
+//     allPlayers(offset: Int = 0, limit: Int = -1): [Player!]!
+//   }
 
-var schema2 = buildSchema(`
-  type User {
-    id: ID
-    username: String!
-    password: String!
-  }
+//   type Mutation {
+//     createPlayer(name: String,
+//       championshipCount: Int,
+//       teamId: String): Player
+//   }
 
-  type Query {
-    allUsers(offset: Int = 0, limit: Int = -1, name: String): [User!]!
-  }
+// `);
 
-  type Mutation {
-    createUser(username: String,
-    password: String): User
-  }
-`);
+// var root = {
+// 	greetings: {
+// 		hello: () => 'Hello world!',
+// 		goodbye: () => 'See you soon!',
+// 	},
+// };
 
-var rootValue = {
-	allPlayers: args => {
-		offset = args['offset'];
-		limit = args['limit'];
-		r = _.values(data['allPlayers']).slice(offset);
-		if (limit > -1) {
-			r = r.slice(0, Math.min(limit, r.length));
-		}
-		_.forEach(r, x => {
-			data.allPlayers[x.id].team = data.allTeams[x.teamId];
-		});
-		return r;
-	},
-	createPlayer: args => {
-		id = (_.values(data['allPlayers']).length + 1).toString();
-		args['id'] = id;
-		args['team'] = data['allTeams'][args['teamId']];
-		data['allPlayers'][id] = args;
-		return data['allPlayers'][id];
-	},
-};
+// var schema2 = buildSchema(`
+//   type User {
+//     id: ID
+//     username: String!
+//     password: String!
+//   }
 
-// When going to /graphiql endpoint, will take you to the explorer.
-app.use(
-	'/graphiql',
-	graphqlHTTP({
-		schema: schema,
-		rootValue: rootValue,
-		graphiql: true,
-	})
-);
+//   type Query {
+//     allUsers(offset: Int = 0, limit: Int = -1, name: String): [User!]!
+//   }
+
+//   type Mutation {
+//     createUser(username: String,
+//     password: String): User
+//   }
+// `);
+
+// var rootValue = {
+// 	allPlayers: args => {
+// 		offset = args['offset'];
+// 		limit = args['limit'];
+// 		r = _.values(data['allPlayers']).slice(offset);
+// 		if (limit > -1) {
+// 			r = r.slice(0, Math.min(limit, r.length));
+// 		}
+// 		_.forEach(r, x => {
+// 			data.allPlayers[x.id].team = data.allTeams[x.teamId];
+// 		});
+// 		return r;
+// 	},
+// 	createPlayer: args => {
+// 		id = (_.values(data['allPlayers']).length + 1).toString();
+// 		args['id'] = id;
+// 		args['team'] = data['allTeams'][args['teamId']];
+// 		data['allPlayers'][id] = args;
+// 		return data['allPlayers'][id];
+// 	},
+// };
+
+// // When going to /graphiql endpoint, will take you to the explorer.
+// app.use(
+// 	'/graphiql',
+// 	graphqlHTTP({
+// 		schema: schema,
+// 		rootValue: rootValue,
+// 		graphiql: true,
+// 	})
+// );
 
 // app.get('/', function(req, res) {
 //   res.end(JSON.stringify(root.greetings));

@@ -2,35 +2,29 @@ const User = require('../../db/models/user');
 
 let helpers = {};
 
-helpers.signup = function(data, callback) {
-	var user = new User({
-		username: data.username,
-		password: User.prototype.generateHash.call(this, data.password),
-	});
-
-	user.save((err, result) => {
-		if (err) {
-			console.log('SERVER: User save failed. ', err);
-		}
-		callback('SERVER: Signup successful.');
-	});
+helpers.signup = async function(data) {
+	const [user] = await User.find({ username: data.username }, 'username password').exec();
+	if (user == null) {
+		const newUser = new User({
+			username: data.username,
+			password: User.generateHash(data.password),
+		});
+		const result = await newUser.save();
+		return 'SERVER: Signup successful.';
+	} else {
+		return `SERVER: User ${data.username} already exists.`;
+	}
 };
 
-helpers.login = function(data, callback) {
-	var query = User.find({ username: data.username }, 'username password', (err, user) => {
-		if (err) throw err;
-		else if (user.length === 0) {
-			callback(`SERVER: User ${data.username} not found.`);
-		} else {
-			User.prototype.validatePassword.call(this, data.password, user[0].password, res => {
-				if (res) {
-					callback('SERVER: Login successful.');
-				} else {
-					callback('SERVER: Password does not match.');
-				}
-			});
-		}
-	});
+helpers.login = async function(data, callback) {
+	const [user] = await User.find({ username: data.username }, 'username password').exec();
+	if (user == null) {
+		return `SERVER: User ${data.username} not found.`;
+	} else {
+		const res = await User.validatePassword(data.password, user.password);
+		if (res) return `SERVER: Login successful.`;
+		return `SERVER: Password does not match.`;
+	}
 };
 
 module.exports = helpers;
