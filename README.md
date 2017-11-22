@@ -19,7 +19,7 @@ npm start
 
 To run the server, run:
 ```
-npm run react-dev
+npm run server
 ```
 
 Enjoy!
