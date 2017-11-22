@@ -2,6 +2,24 @@ body {
 	font-size: 16px;
 }
 
+.chatboy {
+	position: fixed;
+	top: 70vh;
+	left: 5vw;
+}
+
+.chatboy img {
+	width: 100px;
+	height: 100px;
+}
+
+.chatboy .chat-bubble {
+	border: 1px solid black;
+	width: 12.5em;
+	background-color: white;
+	padding: 0.25em;
+}
+
 .login-form > * {
 	margin-bottom: 0.5em;
 }
