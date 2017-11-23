@@ -21,24 +21,22 @@ export default class Chatboy extends React.Component {
 					className="chat-input"
 					size="mini"
 					value={this.state.currentMessage}
+					placeholder="Send with enter."
 					type="text"
 					onChange={e => {
 						this.setState({ currentMessage: e.target.value });
 					}}
-				/>
-				<Button
-					className="chat-send"
-					onClick={e => {
-						let messages = this.state.messages.slice();
-						messages.push(this.state.currentMessage);
-						this.setState({
-							messages: messages,
-							currentMessage: '',
-						});
+					onKeyPress={e => {
+						if (e.key === 'Enter' && this.state.currentMessage !== '') {
+							let messages = this.state.messages.slice();
+							messages.push(this.state.currentMessage);
+							this.setState({
+								messages: messages,
+								currentMessage: '',
+							});
+						}
 					}}
-				>
-					Send
-				</Button>
+				/>
 			</div>
 		);
 	};
@@ -49,8 +47,8 @@ export default class Chatboy extends React.Component {
 			<div className="messages">
 				{messages.map((message, index) => (
 					<div key={'message-' + index}>
-						{message}
-						<Divider fitted={true} />
+						<div>{message}</div>
+						<div>{index !== this.state.messages.length - 1 ? <Divider fitted={true} /> : null}</div>
 					</div>
 				))}
 			</div>
