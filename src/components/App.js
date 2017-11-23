@@ -52,7 +52,6 @@ export default class App extends React.Component {
 	render() {
 		return (
 			<div>
-				<Chatboy />
 				<UserCredentialsModal onLoginHandler={this.onLoginHandler} onSignupHandler={this.onSignupHandler} />
 				<div style={{ width: '400px' }}>
 					Pfiat di! Die Kleinod betören die schamlos Müßiggang. Die ausgemergelt Personenvereinzelungsanlage. Fräulein
